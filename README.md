@@ -19,9 +19,7 @@ Experimental. The APK is a rebrand of a binary release (it is not built from
 upstream sources), so it is behind upstream and may have bugs the official app
 does not.
 
-Confirmed booting on an Android 16 (API 36) arm64 device with QEMU backend. Builds `1.2.9-kalidroid.1` … `1.2.9-kalidroid.4` do not boot — do
-not use them.
-
+Confirmed booting on an Android 16 (API 36) arm64 device with QEMU backend. Builds.
 ## Install
 
 1. Download the APK from [Releases](../../releases).
