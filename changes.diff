@@ -1,0 +1,233 @@
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -1,4 +1,4 @@
+-<?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="36" android:compileSdkVersionCodename="16" package="com.excp.podroid.kali" platformBuildVersionCode="36" platformBuildVersionName="16">
++<?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="36" android:compileSdkVersionCodename="16" package="org.kalidroid.app" platformBuildVersionCode="36" platformBuildVersionName="16">
+     <uses-permission android:name="android.permission.INTERNET"/>
+     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+@@ -16,8 +16,8 @@
+     <uses-feature android:name="android.software.virtualization_framework" android:required="false"/>
+     <uses-permission android:name="android.permission.MANAGE_VIRTUAL_MACHINE"/>
+     <uses-permission android:name="android.permission.USE_CUSTOM_VIRTUAL_MACHINE"/>
+-    <permission android:name="com.excp.podroid.kali.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="signature"/>
+-    <uses-permission android:name="com.excp.podroid.kali.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"/>
++    <permission android:name="org.kalidroid.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="signature"/>
++    <uses-permission android:name="org.kalidroid.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"/>
+     <application android:allowBackup="true" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:dataExtractionRules="@xml/data_extraction_rules" android:extractNativeLibs="true" android:fullBackupContent="@xml/backup_rules" android:hardwareAccelerated="true" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:largeHeap="true" android:name="com.excp.podroid.PodroidApplication" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/Theme.Podroid" android:usesCleartextTraffic="true">
+         <activity android:configChanges="keyboard|keyboardHidden|orientation|screenSize" android:exported="true" android:launchMode="singleTop" android:name="com.excp.podroid.MainActivity" android:theme="@style/Theme.Podroid" android:windowSoftInputMode="adjustResize">
+             <intent-filter>
+@@ -29,10 +29,10 @@
+                 <category android:name="android.intent.category.DEFAULT"/>
+             </intent-filter>
+         </activity>
+-        <provider android:authorities="com.excp.podroid.kali.fileprovider" android:exported="false" android:grantUriPermissions="true" android:name="androidx.core.content.FileProvider">
++        <provider android:authorities="org.kalidroid.app.fileprovider" android:exported="false" android:grantUriPermissions="true" android:name="androidx.core.content.FileProvider">
+             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths"/>
+         </provider>
+-        <provider android:authorities="com.excp.podroid.kali.control" android:exported="true" android:name="com.excp.podroid.engine.control.ControlProvider" android:permission="android.permission.DUMP"/>
++        <provider android:authorities="org.kalidroid.app.control" android:exported="true" android:name="com.excp.podroid.engine.control.ControlProvider" android:permission="android.permission.DUMP"/>
+         <service android:exported="false" android:foregroundServiceType="" android:name="com.excp.podroid.service.PodroidService">
+             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Podman emulation via QEMU"/>
+         </service>
+@@ -43,7 +43,7 @@
+                 <action android:name="com.excp.podroid.action.STOP_VM"/>
+             </intent-filter>
+         </receiver>
+-        <provider android:authorities="com.excp.podroid.kali.androidx-startup" android:exported="false" android:name="androidx.startup.InitializationProvider">
++        <provider android:authorities="org.kalidroid.app.androidx-startup" android:exported="false" android:name="androidx.startup.InitializationProvider">
+             <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer" android:value="androidx.startup"/>
+             <meta-data android:name="androidx.lifecycle.ProcessLifecycleInitializer" android:value="androidx.startup"/>
+             <meta-data android:name="androidx.profileinstaller.ProfileInstallerInitializer" android:value="androidx.startup"/>
+--- a/apktool.yml
++++ b/apktool.yml
+@@ -6,6 +6,9 @@
+ - assets/dexopt/baseline.prof
+ - assets/dexopt/baseline.profm
+ - png
++- squashfs
++- img
++- assets/vmlinuz-virt
+ isFrameworkApk: false
+ packageInfo:
+   forcedPackageId: '127'
+@@ -23,5 +26,5 @@
+   tag: null
+ version: 2.7.0-dirty
+ versionInfo:
+-  versionCode: '33'
+-  versionName: 1.2.9
++  versionCode: '41'
++  versionName: 1.2.9-kalidroid.8
+--- a/res/values/colors.xml
++++ b/res/values/colors.xml
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+-    <color name="ic_launcher_background">#ff0a0a0a</color>
++    <color name="ic_launcher_background">#ff0d1220</color>
+     <color name="window_background">#fffafafa</color>
+ </resources>
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -9,7 +9,7 @@
+     <string name="android_port">Android port</string>
+     <string name="androidx_compose_foundation_autofill">Autofill</string>
+     <string name="androidx_startup">androidx.startup</string>
+-    <string name="app_name">Podroid</string>
++    <string name="app_name">KaliDroid</string>
+     <string name="appearance">Appearance</string>
+     <string name="applies_on_next_vm_start">Applies on next VM start</string>
+     <string name="architecture">Architecture</string>
+@@ -24,9 +24,9 @@
+     <string name="avf_boot_failed_switch_qemu">"AVF couldn't boot on this device. Switch the backend to QEMU."</string>
+     <string name="avf_boot_failed_try_one_core">AVF failed to boot on this device. Try setting CPU cores to 1, or switch the backend to QEMU.</string>
+     <string name="avf_diagnostic">AVF (pKVM) diagnostic</string>
+-    <string name="avf_grant_commands">"adb shell pm grant com.excp.podroid \\
++    <string name="avf_grant_commands">"adb shell pm grant org.kalidroid.app \\
+  android.permission.MANAGE_VIRTUAL_MACHINE
+-adb shell pm grant com.excp.podroid \\
++adb shell pm grant org.kalidroid.app \\
+  android.permission.USE_CUSTOM_VIRTUAL_MACHINE"</string>
+     <string name="avf_hint_needs_pc">Needs a PC with adb, or the Shizuku app for on-device grant. Run once:</string>
+     <string name="avf_kvm">AVF (KVM)</string>
+@@ -71,7 +71,7 @@
+     <string name="container_backup_refresh">Refresh list</string>
+     <string name="container_backup_save_image">Save image</string>
+     <string name="container_backup_settings_subtitle">Export containers &amp; images</string>
+-    <string name="container_backup_terminal_hint">Paste into the Podroid terminal. podroid-backup is included in newer guest images; older images fall back to podman export automatically.</string>
++    <string name="container_backup_terminal_hint">Paste into the KaliDroid terminal. podroid-backup is included in newer guest images; older images fall back to podman export automatically.</string>
+     <string name="container_backup_title">Container backup</string>
+     <string name="container_backup_tools">Tools</string>
+     <string name="container_backup_vm_stopped">Start the VM before running backup commands.</string>
+@@ -101,7 +101,7 @@
+     <string name="export_diagnostic_chooser">Share diagnostic log</string>
+     <string name="export_diagnostic_failed">Export failed: %1$s</string>
+     <string name="export_diagnostic_log">Export diagnostic log</string>
+-    <string name="export_diagnostic_subject">Podroid Diagnostic Log</string>
++    <string name="export_diagnostic_subject">KaliDroid Diagnostic Log</string>
+     <string name="extra_kernel_cmdline">Extra kernel cmdline</string>
+     <string name="extra_keys">Extra keys</string>
+     <string name="extra_qemu_args">Extra QEMU args</string>
+@@ -164,7 +164,7 @@
+     <string name="perm_notifications_title">Notifications</string>
+     <string name="perm_notifications_why">"Shows the VM's state and lets you stop it from the notification shade."</string>
+     <string name="permissions">Permissions</string>
+-    <string name="permissions_description">Podroid needs these to run the VM reliably.</string>
++    <string name="permissions_description">KaliDroid needs these to run the VM reliably.</string>
+     <string name="permissions_needed">Permissions needed</string>
+     <string name="persistent_storage">Persistent Storage</string>
+     <string name="phone_ip">Phone IP</string>
+@@ -180,7 +180,7 @@
+     <string name="port_forward_table_full">Limit of %1$d port forwards reached. Remove one first.</string>
+     <string name="port_forwards">Port forwards</string>
+     <string name="port_forwards_clean">Clean all</string>
+-    <string name="port_forwards_clean_confirm_body">"This removes all %1$d forwarding rules. Podroid's own forwards (SSH, display, audio) are not affected."</string>
++    <string name="port_forwards_clean_confirm_body">"This removes all %1$d forwarding rules. KaliDroid's own forwards (SSH, display, audio) are not affected."</string>
+     <string name="port_forwards_clean_confirm_btn">Remove all</string>
+     <string name="port_forwards_clean_confirm_title">Remove all port forwards?</string>
+     <string name="port_forwards_count">Port forwards (%1$d)</string>
+@@ -226,7 +226,7 @@
+     <string name="size_label">Size</string>
+     <string name="ssh">SSH</string>
+     <string name="ssh_access">SSH access</string>
+-    <string name="ssh_password_hint">ssh root@&lt;phone-ip> -p 9922 (password: podroid)</string>
++    <string name="ssh_password_hint">ssh root@&lt;phone-ip> -p 9922 (password: kalidroid)</string>
+     <string name="start_fullscreen">Start in fullscreen</string>
+     <string name="start_vm">Start VM</string>
+     <string name="state_empty">Empty</string>
+--- a/smali/bt.smali
++++ b/smali/bt.smali
+@@ -3954,7 +3954,7 @@
+ 
+     .line 671
+     .line 672
+-    const-string v11, "Podroid/1.2.9"
++    const-string v11, "KaliDroid/1.2.9-kalidroid.8"
+ 
+     .line 673
+     .line 674
+--- a/smali/com/excp/podroid/service/PodroidService.smali
++++ b/smali/com/excp/podroid/service/PodroidService.smali
+@@ -912,7 +912,7 @@
+     .line 42
+     .line 43
+     .line 44
+-    const-string v3, "Podroid"
++    const-string v3, "KaliDroid"
+ 
+     .line 45
+     .line 46
+@@ -2082,7 +2082,7 @@
+ 
+     .line 5
+     .line 6
+-    const-string v1, "Podroid Service"
++    const-string v1, "KaliDroid Service"
+ 
+     .line 7
+     .line 8
+--- a/smali/et.smali
++++ b/smali/et.smali
+@@ -12495,7 +12495,7 @@
+     const/4 v8, 0x0
+ 
+     .line 550
+-    const-string v9, "v1.2.9 \u00b7 QEMU 11.0.4"
++    const-string v9, "v1.2.9-kalidroid.8 \u00b7 QEMU 11.0.4"
+ 
+     .line 551
+     .line 552
+--- a/smali/fu.smali
++++ b/smali/fu.smali
+@@ -2212,7 +2212,7 @@
+ 
+     .line 258
+     .line 259
+-    const-string v8, "https://api.github.com/repos/ExTV/Podroid/releases/latest"
++    const-string v8, "https://api.github.com/repos/saif01jo/kalidroid-/releases/latest"
+ 
+     .line 260
+     .line 261
+--- a/smali/nx1.smali
++++ b/smali/nx1.smali
+@@ -3501,7 +3501,7 @@
+     .line 1371
+     .line 1372
+     .line 1373
+-    const-string v0, "\n\n=== App ===\nVersion:      1.2.9 (33)\nBuild type:   release\nApp ID:       com.excp.podroid.kali\nQEMU version: 11.0.4\n\n=== Device ===\n"
++    const-string v0, "\n\n=== App ===\nVersion:      1.2.9-kalidroid.8 (41)\nBuild type:   release\nApp ID:       org.kalidroid.app\nQEMU version: 11.0.4\n\n=== Device ===\n"
+ 
+     .line 1374
+     .line 1375
+--- a/smali/os1.smali
++++ b/smali/os1.smali
+@@ -993,7 +993,7 @@
+ 
+     .line 392
+     .line 393
+-    const-string v1, "https://extv.github.io/Podroid/guide/"
++    const-string v1, "https://github.com/saif01jo/kalidroid-"
+ 
+     .line 394
+     .line 395
+@@ -1050,7 +1050,7 @@
+ 
+     .line 419
+     .line 420
+-    const-string v2, "Can\'t open https://extv.github.io/Podroid/guide/."
++    const-string v2, "Can\'t open https://github.com/saif01jo/kalidroid-."
+ 
+     .line 421
+     .line 422
+--- a/smali/v82.smali
++++ b/smali/v82.smali
+@@ -579,7 +579,7 @@
+     .locals 0
+ 
+     .line 1
+-    const-string p0, "Podroid 1.2.9"
++    const-string p0, "KaliDroid 1.2.9-kalidroid.8"
+ 
+     .line 2
+     .line 3
